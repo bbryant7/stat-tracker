@@ -4,11 +4,8 @@ mongoose.connect('mongodb://localhost:27017/baileystatdb');
 const express = require('express');
 const bodyParser = require('body-parser');
 const bStat = require('./models/stat.js');
-// const bcrypt = require('bcryptjs');
-// const hash = bcrypt.hashSync(password, 8);
 const passport = require('passport');
 const BasicStrategy = require('passport-http').BasicStrategy;
-// const ObjectId = require('mongodb').ObjectID;
 const app = express();
 
 app.use(bodyParser.json())
@@ -25,7 +22,7 @@ passport.use(new BasicStrategy(
       return done(null, username);
   }
 ));
-
+// basic authentication
 app.get('/api/hello',
     passport.authenticate('basic', {session: false}),
     function (req, res) {
@@ -33,21 +30,18 @@ app.get('/api/hello',
     }
 );
 
-// get list of vending machine inventory
+// get list of activities
 app.get('/api/activities',function(req, res){
   bStat.find().then(function(results){
     res.json({stat: results})
   })
 })
 
-// add new item to vending machine
+// create new activity
 app.post("/api/activities", function(req, res) {
-
-
   const newStat = new bStat({
     description: req.body.description,
-    amount: req.body.amount,
-
+    stat: []
   })
 
   newStat.save().then(function(){
@@ -55,13 +49,33 @@ app.post("/api/activities", function(req, res) {
   })
 });
 
-//Purchase item (update item quantity to 1 less)
-app.post("/api/activities/:id", function(req, res) {
-  bStat.findOneAndUpdate({_id:req.query.id},{$set:{amount:100}})
-  .then(function(results){
-    res.json({status: "success"})
-  })
+
+// add a stat
+app.put("/api/activities/:id", function(req, res) {
+    bStat.updateOne({task:req.params.task}, {$push: {stat: req.body}})
+      .then(function(results){
+        res.json({status: 'success', stat: results})
+      })
+      .catch(function(error){
+        console.log(error);
+      })
 });
+
+// delete a activity
+app.delete("/api/stats/:id", function(req, res) {
+  console.log('you be here?');
+
+  bStat.deleteOne({
+      task: req.params.task
+    })
+    .then(function(results) {
+      res.json({
+        status: 'success',
+        stat: results
+      })
+    })
+  console.log('coleslaw');
+})
 
 
 

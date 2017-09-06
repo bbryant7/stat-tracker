@@ -3,7 +3,11 @@ const mongoose = require('mongoose');
 
 const baileyStat = new mongoose.Schema({
         description: {type: String, required: true, unique: true},
-        amount: Number
+        stat: [{
+          date: String,
+          amount: Number
+        }
+      ]
 })
 
 const stats = mongoose.model('bstats', baileyStat);
